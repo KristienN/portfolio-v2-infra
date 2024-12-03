@@ -1,21 +1,27 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
-# Add Docker's official GPG key:
-sudo apt-get update -y
-sudo apt-get install ca-certificates curl
-sudo install -m 0755 -d /etc/apt/keyrings
-sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
-sudo chmod a+r /etc/apt/keyrings/docker.asc
+DOCTL_ACCESS_TOKEN=$1
 
-# Add the repository to Apt sources:
-echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
-  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
-  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-sudo apt-get update
+if [ -z "$DOCTL_ACCESS_TOKEN" ]; then
+  echo "Error: DOCTL_ACCESS_TOKEN is not set"
+  exit 1
+fi
 
-# Install latest version
-sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+echo "Updating package list and installing dependencies..."
+sudo apt-get update -y || { echo "Failed to update package list"; exit 1; }
+sudo apt install apt-transport-https ca-certificates curl -y
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
 
-sudo docker --version
 
+sudo snap install doctl
+sudo snap connect doctl:dot-docker
+sudo mkdir /root/.config
+
+echo "Logging into Digital Ocean Services"
+sudo doctl auth init --access-token $DOCTL_ACCESS_TOKEN
+sudo doctl registry login
+
+echo "Pulling latest image"
+sudo docker pull registry.digitalocean.com/kristien-docr/portfolio-v2:local || { echo "Failed to pull image"; exit 1; }
+sudo docker run --name portfolio-v2 -d -p 80:80 registry.digitalocean.com/kristien-docr/portfolio-v2:local
