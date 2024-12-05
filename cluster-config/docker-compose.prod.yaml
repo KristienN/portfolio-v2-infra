@@ -1,0 +1,26 @@
+services:
+
+  app:
+    container_name: portfolio-1
+    image: "registry.digitalocean.com/kristien-docr/portfolio-v2:latest"
+    ports:
+      - "8001:80"
+    restart: on-failure
+
+  replica-app:
+    container_name: portfolio-2
+    image: "registry.digitalocean.com/kristien-docr/portfolio-v2:latest"
+    ports:
+      - "8002:80"
+    restart: on-failure
+
+  ngx-reverse-proxy-lb:
+    container_name: ngx-reverse-proxy-lb
+    image: "registry.digitalocean.com/kristien-docr/portfolio-v2-nlb-proxy:latest"
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - app
+      - replica-app
+    restart: on-failure
