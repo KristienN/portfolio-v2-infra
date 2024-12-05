@@ -25,5 +25,5 @@ variable "ssh_fingerprint" {
 variable "digitalocean_access_token" {
   description = "DigitalOcean API Token"
   type        = string
-  sensitive   = true
+  sensitive   = false
 }

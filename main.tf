@@ -22,6 +22,18 @@ resource "digitalocean_droplet" "portfolio-v2-server" {
   tags = ["portfolio-v2", "server"]
 
   provisioner "file" {
+    source      = "./cluster-config/docker-compose.prod.yaml"
+    destination = "/var/local/docker-compose.prod.yaml"
+
+    connection {
+      type = "ssh"
+      user = "root"
+      private_key = file("~/.ssh/id_rsa")
+      host = self.ipv4_address
+    }
+  }
+
+  provisioner "file" {
     source      = "./scripts/install.sh"
     destination = "/tmp/install.sh"
 

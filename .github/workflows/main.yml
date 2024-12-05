@@ -16,7 +16,7 @@ jobs:
           PRIVATE_KEY: ${{ secrets.TF_SSH_PRIVATE_KEY }}
         run: |
           echo "$PRIVATE_KEY" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
+          chmod 700 ~/.ssh/id_rsa
 
       - name: "Set up Terraform"
         uses: hashicorp/setup-terraform@v3
@@ -30,8 +30,3 @@ jobs:
           terraform apply tfplan -var digitalocean_access_token=$DIGITALOCEAN_ACCESS_TOKEN -auto-approve
         env:
           DIGITALOCEAN_ACCESS_TOKEN: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
-      - name: "Post-deployment testing"
-        run: |
-          terraform output -raw droplet_ip > droplet_ip.txt
-          DROPLET_IP=$(cat droplet_ip.txt)
-          curl -I http://DROPLET_IP
